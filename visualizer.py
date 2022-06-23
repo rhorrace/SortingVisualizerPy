@@ -8,9 +8,10 @@ from colors import *
 class Visualizer:
     def __init__(self):
         self.__window = Tk()
-        self.__algorithms = ['Bubble Sort', 'Merge Sort']
+        self.__algorithms = ['Bubble Sort', 'Heap Sort', 'Insertion Sort', 'Merge Sort', 'Quick Sort', 'Selection Sort']
         self.__speeds = ['Fast', 'Medium', 'Slow']
         self.__data = []
+        self.__size = 0
 
         self.__UI = Frame(self.__window, width=900, height=300, bg=WHITE)
         self.__UI.grid(row=0, column=0, padx=10, pady=5)
@@ -61,10 +62,8 @@ class Visualizer:
         self.__window.update_idletasks()
 
     def __generate(self):
-        self.__data = []
-        for i in range(0, 100):
-            random_value = random.randint(1, 150)
-            self.__data.append(random_value)
+        self.__data = random.sample(range(1, 151), 150)
+        self.__size = len(self.__data)
 
         self.__draw_data([BLUE] * len(self.__data))
 
@@ -82,53 +81,117 @@ class Visualizer:
         if self.__drpAlgorithm.get() == 'Bubble Sort':
             self.__bubble_sort(time_tick)
 
+        elif self.__drpAlgorithm.get() == 'Heap Sort':
+            self.__heap_sort(time_tick)
+
+        elif self.__drpAlgorithm.get() == 'Insertion Sort':
+            self.__insertion_sort(time_tick)
+
         elif self.__drpAlgorithm.get() == 'Merge Sort':
-            self.__merge_sort(0, len(self.__data) - 1, time_tick)
+            self.__merge_sort(0, self.__size - 1, time_tick)
+
+        elif self.__drpAlgorithm.get() == 'Quick Sort':
+            self.__quick_sort(0, self.__size - 1, time_tick)
+
+        elif self.__drpAlgorithm.get() == 'Selection Sort':
+            self.__selection_sort(time_tick)
 
     # Sorts
 
+    # Bubble Sort
     def __bubble_sort(self, time_tick):
-        size = len(self.__data)
-        for i in range(size - 1):
-            for j in range(size - i - 1):
-                if self.__data[j] > self.__data[j + 1]:
-                    self.__data[j], self.__data[j + 1] = self.__data[j + 1], self.__data[j]
-                    self.__draw_data([YELLOW if x == j or x == j + 1 else BLUE for x in range(len(self.__data))])
-                    time.sleep(time_tick)
+        swapped = False
+        for n in range(self.__size - 1, 0, -1):
+            for i in range(n):
+                if self.__data[i] <= self.__data[i + 1]:
+                    continue
 
-        self.__draw_data([BLUE] * size)
+                swapped = True
+                self.__data[i], self.__data[i + 1] = self.__data[i + 1], self.__data[i]
+                self.__draw_data([YELLOW if x == i or x == i + 1 else BLUE for x in range(self.__size)])
+                time.sleep(time_tick)
 
+            if not swapped:
+                break
+
+        self.__draw_data([BLUE] * self.__size)
+
+    # Heap Sort
+    def __heap_sort(self, time_tick):
+        for i in range(self.__size // 2 - 1, -1, -1):
+            self.__heapify(self.__size, i, time_tick)
+
+        for i in range(self.__size - 1, 0, -1):
+            self.__draw_data([YELLOW if x == i else BLUE for x in range(self.__size)])
+            time.sleep(time_tick)
+
+            self.__data[i], self.__data[0] = self.__data[0], self.__data[i]
+            self.__heapify(i, 0, time_tick)
+
+        self.__draw_data([BLUE] * self.__size)
+
+    def __heapify(self, n, i, time_tick):
+        largest = i
+        lt = 2 * i + 1
+        rt = 2 * i + 2
+
+        if lt < n and self.__data[largest] < self.__data[lt]:
+            largest = lt
+
+        if rt < n and self.__data[largest] < self.__data[rt]:
+            largest = rt
+
+        if largest != i:
+            self.__draw_data([YELLOW if x == largest else BLUE for x in range(self.__size)])
+            time.sleep(time_tick)
+
+            self.__data[i], self.__data[largest] = self.__data[largest], self.__data[i]
+
+            self.__heapify(n, largest)
+
+    # Insertion Sort
+    def __insertion_sort(self, time_tick):
+        for i in range(1, self.__size):
+            key = self.__data[i]
+            j = i - 1
+
+            while j >= 0 and self.__data[j] > key:
+                self.__draw_data([YELLOW if x == j or x == j + 1 else BLUE for x in range(self.__size)])
+                self.__data[j + 1] = self.__data[j]
+                j -= 1
+
+            self.__draw_data([YELLOW if x == j + 1 else BLUE for x in range(self.__size)])
+            time.sleep(time_tick)
+
+            self.__data[j + 1] = key
+
+            self.__draw_data([BLUE] * self.__size)
+
+    # Merge Sort
     def __merge_sort(self, start, end, time_tick):
-        def pick_color(x, s, m, e):
-            if s <= x < m:
-                return PURPLE
-            if x == m:
-                return YELLOW
-            if mid < x <= e:
-                return DARK_BLUE
-            return BLUE
-
         if start < end:
             mid = start + (end - start) // 2
             self.__merge_sort(start, mid, time_tick)
             self.__merge_sort(mid + 1, end, time_tick)
 
-            self.__merge(start, mid, end)
+            self.__merge(start, mid, end, time_tick)
 
-            self.__draw_data([pick_color(x, start, mid, end) for x in range(len(self.__data))])
             time.sleep(time_tick)
 
-        self.__draw_data([BLUE] * len(self.__data))
+        self.__draw_data([BLUE] * self.__size)
 
-    def __merge(self, start, mid, end):
-        arr1 = self.__data[start:mid+1]
-        arr2 = self.__data[mid+1:end]
+    def __merge(self, start, mid, end, time_tick):
+        arr1 = self.__data[start:mid + 1]
+        arr2 = self.__data[mid + 1:end + 1]
 
         i, j, k = 0, 0, start
         n1, n2 = len(arr1), len(arr2)
 
         while i < n1 and j < n2:
-            if arr1[i] <= arr2[j]:
+            self.__draw_data([YELLOW if x == k else BLUE for x in range(self.__size)])
+            time.sleep(time_tick)
+
+            if arr1[i] < arr2[j]:
                 self.__data[k] = arr1[i]
                 i += 1
             else:
@@ -138,11 +201,66 @@ class Visualizer:
             k += 1
 
         while i < n1:
+            self.__draw_data([YELLOW if x == k else BLUE for x in range(self.__size)])
+            time.sleep(time_tick)
+
             self.__data[k] = arr1[i]
             i += 1
             k += 1
 
         while j < n2:
+            self.__draw_data([YELLOW if x == k else BLUE for x in range(self.__size)])
+            time.sleep(time_tick)
+
             self.__data[k] = arr2[j]
             j += 1
             k += 1
+
+    # Quick Sort
+    def __quick_sort(self, low, high, time_tick):
+        if low < high:
+            pi = self.__partition(low, high, time_tick)
+
+            self.__quick_sort(low, pi - 1, time_tick)
+            self.__quick_sort(pi + 1, high, time_tick)
+
+        self.__draw_data([BLUE] * self.__size)
+
+    def __partition(self, low, high, time_tick):
+        pivot = self.__data[high]
+
+        i = low -1
+
+        for j in range(low, high):
+            if self.__data[j] <= pivot:
+                self.__draw_data([YELLOW if x == j else BLUE for x in range(self.__size)])
+                time.sleep(time_tick
+                           )
+                i += 1
+
+                self.__data[i], self.__data[j] = self.__data[j], self.__data[i]
+
+        self.__draw_data([YELLOW if x == i + 1 else BLUE for x in range(self.__size)])
+        time.sleep(time_tick)
+
+        self.__data[i + 1], self.__data[high] = self.__data[high], self.__data[i + 1]
+
+        return i + 1
+
+    # Selection Sort
+    def __selection_sort(self, time_tick):
+        size = len(self.__data)
+
+        for i in range(size):
+            min_idx = i
+            for j in range(i + 1, size):
+                self.__draw_data([YELLOW if x == j else BLUE for x in range(size)])
+
+                if self.__data[min_idx] <= self.__data[j]:
+                    continue
+
+                min_idx = j
+
+            self.__data[i], self.__data[min_idx] = self.__data[min_idx], self.__data[i]
+
+        self.__draw_data([BLUE] * size)
