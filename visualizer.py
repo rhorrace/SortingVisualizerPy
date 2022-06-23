@@ -234,8 +234,8 @@ class Visualizer:
         for j in range(low, high):
             if self.__data[j] <= pivot:
                 self.__draw_data([YELLOW if x == j else BLUE for x in range(self.__size)])
-                time.sleep(time_tick
-                           )
+                time.sleep(time_tick)
+
                 i += 1
 
                 self.__data[i], self.__data[j] = self.__data[j], self.__data[i]
