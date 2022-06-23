@@ -147,7 +147,7 @@ class Visualizer:
 
             self.__data[i], self.__data[largest] = self.__data[largest], self.__data[i]
 
-            self.__heapify(n, largest)
+            self.__heapify(n, largest, time_tick)
 
     # Insertion Sort
     def __insertion_sort(self, time_tick):
@@ -229,7 +229,7 @@ class Visualizer:
     def __partition(self, low, high, time_tick):
         pivot = self.__data[high]
 
-        i = low -1
+        i = low - 1
 
         for j in range(low, high):
             if self.__data[j] <= pivot:
