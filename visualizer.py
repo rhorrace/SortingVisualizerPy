@@ -8,8 +8,9 @@ from colors import *
 class Visualizer:
     def __init__(self):
         self.__window = Tk()
-        self.__algorithms = ['Bitonic Sort', 'Bubble Sort', 'Comb Sort', 'Gnome Sort', 'Heap Sort',
-                             'Insertion Sort', 'Merge Sort', 'Quick Sort', 'Selection Sort', 'Shell Sort']
+        self.__algorithms = ['Bitonic Sort', 'Bubble Sort', 'Comb Sort', 'Cycle Sort', 'Gnome Sort',
+                             'Heap Sort', 'Insertion Sort', 'Merge Sort', 'Quick Sort', 'Selection Sort',
+                             'Shell Sort']
         self.__speeds = ['Fast', 'Medium', 'Slow']
         self.__data = []
         self.__size = 0
@@ -75,7 +76,7 @@ class Visualizer:
         elif self.__drpSortSpeed.get() == 'Medium':
             return 0.1
         else:
-            return 0.01
+            return 0.0
 
     def __sort(self):
         self.__time_tick = self.__set_speed()
@@ -87,6 +88,8 @@ class Visualizer:
                 self.__bubble_sort()
             case 'Comb Sort':
                 self.__comb_sort()
+            case 'Cycle Sort':
+                self.__cycle_sort()
             case 'Gnome Sort':
                 self.__gnome_sort()
             case 'Heap Sort':
@@ -169,10 +172,62 @@ class Visualizer:
 
         self.__draw_data([BLUE] * self.__size)
 
-    def __get_next_gap(self, gap):
+    @staticmethod
+    def __get_next_gap(gap):
         gap = (gap * 10) // 13
 
         return 1 if gap < 1 else gap
+
+    # Cycle Sort
+    def __cycle_sort(self):
+        for start in range(0, self.__size - 1):
+            item = self.__data[start]
+
+            pos = start
+
+            for i in range(start + 1, self.__size):
+                if self.__data[i] < item:
+                    pos += 1
+
+                    self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+                    time.sleep(self.__time_tick)
+
+            if pos == start:
+                continue
+
+            while item == self.__data[pos]:
+                pos += 1
+
+                self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+                time.sleep(self.__time_tick)
+
+            self.__data[pos], item = item, self.__data[pos]
+
+            self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+            time.sleep(self.__time_tick)
+
+            while pos != start:
+                pos = start
+
+                for i in range(start + 1, self.__size):
+                    if self.__data[i] < item:
+                        pos += 1
+
+                        self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+                        time.sleep(self.__time_tick)
+
+                while item == self.__data[pos]:
+                    pos += 1
+
+                    self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+                    time.sleep(self.__time_tick)
+
+                self.__data[pos], item = item, self.__data[pos]
+
+                self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+                time.sleep(self.__time_tick)
+
+        self.__draw_data([BLUE] * self.__size)
 
     # Gnome Sort
     def __gnome_sort(self):
