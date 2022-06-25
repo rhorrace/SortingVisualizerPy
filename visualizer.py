@@ -76,7 +76,7 @@ class Visualizer:
         elif self.__drpSortSpeed.get() == 'Medium':
             return 0.1
         else:
-            return 0.0
+            return 0.01
 
     def __sort(self):
         self.__time_tick = self.__set_speed()
@@ -130,31 +130,35 @@ class Visualizer:
 
     def __comp_and_swap(self, i, j, dire):
         if (dire == 1 and self.__data[i] > self.__data[j]) or (dire == 0 and self.__data[i] < self.__data[j]):
+            self.__data[i], self.__data[j] = self.__data[j], self.__data[i]
+
             self.__draw_data([YELLOW if x == i or x == j else BLUE for x in range(self.__size)])
             time.sleep(self.__time_tick)
-
-            self.__data[i], self.__data[j] = self.__data[j], self.__data[i]
 
     # Bubble Sort
     def __bubble_sort(self):
         swapped = False
         for n in range(self.__size - 1, 0, -1):
             for i in range(n):
-                if self.__data[i] <= self.__data[i + 1]:
-                    continue
+                if self.__data[i] > self.__data[i + 1]:
+                    self.__data[i], self.__data[i + 1] = self.__data[i + 1], self.__data[i]
+                    swapped = True
 
-                swapped = True
-                self.__data[i], self.__data[i + 1] = self.__data[i + 1], self.__data[i]
-                self.__draw_data([YELLOW if x == i or x == i + 1 else BLUE for x in range(self.__size)])
+                # Update graph
+                self.__draw_data([YELLOW if x == i + 1 else BLUE for x in range(self.__size)])
                 time.sleep(self.__time_tick)
 
             if not swapped:
                 break
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     # Comb Sort
     def __comb_sort(self):
+        def pick_color(x, idx, gp):
+            return YELLOW if x == idx else PURPLE if x == idx + gp else BLUE
+
         gap = self.__size
         swapped = True
 
@@ -164,12 +168,14 @@ class Visualizer:
 
             for i in range(0, self.__size - gap):
                 if self.__data[i] > self.__data[i + gap]:
-                    self.__draw_data([YELLOW if x == i or x == i + gap else BLUE for x in range(self.__size)])
-                    time.sleep(self.__time_tick)
-
                     self.__data[i], self.__data[i + gap] = self.__data[i + gap], self.__data[i]
                     swapped = True
 
+                # Update graph
+                self.__draw_data([pick_color(x, i, gap) for x in range(self.__size)])
+                time.sleep(self.__time_tick)
+
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     @staticmethod
@@ -180,6 +186,9 @@ class Visualizer:
 
     # Cycle Sort
     def __cycle_sort(self):
+        def pick_color(x, idx, strt):
+            return YELLOW if x == idx else PURPLE if x == strt else BLUE
+
         for start in range(0, self.__size - 1):
             item = self.__data[start]
 
@@ -189,21 +198,16 @@ class Visualizer:
                 if self.__data[i] < item:
                     pos += 1
 
-                    self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
-                    time.sleep(self.__time_tick)
-
             if pos == start:
                 continue
 
             while item == self.__data[pos]:
                 pos += 1
 
-                self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
-                time.sleep(self.__time_tick)
-
             self.__data[pos], item = item, self.__data[pos]
 
-            self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+            # Update graph
+            self.__draw_data([pick_color(x, pos, start) for x in range(self.__size)])
             time.sleep(self.__time_tick)
 
             while pos != start:
@@ -213,20 +217,16 @@ class Visualizer:
                     if self.__data[i] < item:
                         pos += 1
 
-                        self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
-                        time.sleep(self.__time_tick)
-
                 while item == self.__data[pos]:
                     pos += 1
 
-                    self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
-                    time.sleep(self.__time_tick)
-
                 self.__data[pos], item = item, self.__data[pos]
 
-                self.__draw_data([YELLOW if x == pos or x == start else BLUE for x in range(self.__size)])
+                # Update graph
+                self.__draw_data([pick_color(x, pos, start) for x in range(self.__size)])
                 time.sleep(self.__time_tick)
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     # Gnome Sort
@@ -240,12 +240,15 @@ class Visualizer:
             if self.__data[index] >= self.__data[index - 1]:
                 index += 1
             else:
+                self.__data[index], self.__data[index - 1] = self.__data[index - 1], self.__data[index]
+
+                # Update graph
                 self.__draw_data([YELLOW if x == index else BLUE for x in range(self.__size)])
                 time.sleep(self.__time_tick)
 
-                self.__data[index], self.__data[index - 1] = self.__data[index - 1], self.__data[index]
                 index -= 1
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     # Heap Sort
@@ -254,12 +257,15 @@ class Visualizer:
             self.__heapify(self.__size, i)
 
         for i in range(self.__size - 1, 0, -1):
+            self.__data[i], self.__data[0] = self.__data[0], self.__data[i]
+
+            # Update graph
             self.__draw_data([YELLOW if x == i else BLUE for x in range(self.__size)])
             time.sleep(self.__time_tick)
 
-            self.__data[i], self.__data[0] = self.__data[0], self.__data[i]
             self.__heapify(i, 0)
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     def __heapify(self, n, i):
@@ -273,13 +279,16 @@ class Visualizer:
         if rt < n and self.__data[largest] < self.__data[rt]:
             largest = rt
 
-        if largest != i:
-            self.__draw_data([YELLOW if x == largest else BLUE for x in range(self.__size)])
-            time.sleep(self.__time_tick)
+        if largest == i:
+            return
 
-            self.__data[i], self.__data[largest] = self.__data[largest], self.__data[i]
+        self.__data[i], self.__data[largest] = self.__data[largest], self.__data[i]
 
-            self.__heapify(n, largest)
+        # Update graph
+        self.__draw_data([YELLOW if x == i else BLUE for x in range(self.__size)])
+        time.sleep(self.__time_tick)
+
+        self.__heapify(n, largest)
 
     # Insertion Sort
     def __insertion_sort(self):
@@ -288,15 +297,17 @@ class Visualizer:
             j = i - 1
 
             while j >= 0 and self.__data[j] > key:
-                self.__draw_data([YELLOW if x == j or x == j + 1 else BLUE for x in range(self.__size)])
-                self.__data[j + 1] = self.__data[j]
-                j -= 1
+                self.__data[j + 1], self.__data[j] = self.__data[j], self.__data[j + 1]
 
-            self.__draw_data([YELLOW if x == j + 1 else BLUE for x in range(self.__size)])
-            time.sleep(self.__time_tick)
+                # Update graph
+                self.__draw_data([YELLOW if x == j else BLUE for x in range(self.__size)])
+                time.sleep(self.__time_tick)
+
+                j -= 1
 
             self.__data[j + 1] = key
 
+            # Update graph
             self.__draw_data([BLUE] * self.__size)
 
     # Merge Sort
@@ -310,6 +321,7 @@ class Visualizer:
 
             time.sleep(self.__time_tick)
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     def __merge(self, start, mid, end):
@@ -320,6 +332,7 @@ class Visualizer:
         n1, n2 = len(arr1), len(arr2)
 
         while i < n1 and j < n2:
+            # Update graph
             self.__draw_data([YELLOW if x == k else BLUE for x in range(self.__size)])
             time.sleep(self.__time_tick)
 
@@ -333,6 +346,7 @@ class Visualizer:
             k += 1
 
         while i < n1:
+            # Update graph
             self.__draw_data([YELLOW if x == k else BLUE for x in range(self.__size)])
             time.sleep(self.__time_tick)
 
@@ -341,6 +355,7 @@ class Visualizer:
             k += 1
 
         while j < n2:
+            # Update graph
             self.__draw_data([YELLOW if x == k else BLUE for x in range(self.__size)])
             time.sleep(self.__time_tick)
 
@@ -356,6 +371,7 @@ class Visualizer:
             self.__quick_sort(low, pi - 1)
             self.__quick_sort(pi + 1, high)
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     def __partition(self, low, high):
@@ -364,18 +380,22 @@ class Visualizer:
         i = low - 1
 
         for j in range(low, high):
-            if self.__data[j] <= pivot:
-                self.__draw_data([YELLOW if x == j else BLUE for x in range(self.__size)])
-                time.sleep(self.__time_tick)
+            if self.__data[j] > pivot:
+                continue
 
-                i += 1
+            # Update graph
+            self.__draw_data([YELLOW if x == j else BLUE for x in range(self.__size)])
+            time.sleep(self.__time_tick)
 
-                self.__data[i], self.__data[j] = self.__data[j], self.__data[i]
+            i += 1
 
-        self.__draw_data([YELLOW if x == i + 1 else BLUE for x in range(self.__size)])
-        time.sleep(self.__time_tick)
+            self.__data[i], self.__data[j] = self.__data[j], self.__data[i]
 
         self.__data[i + 1], self.__data[high] = self.__data[high], self.__data[i + 1]
+
+        # Update graph
+        self.__draw_data([YELLOW if x == i + 1 else BLUE for x in range(self.__size)])
+        time.sleep(self.__time_tick)
 
         return i + 1
 
@@ -384,20 +404,25 @@ class Visualizer:
         for i in range(self.__size):
             min_idx = i
             for j in range(i + 1, self.__size):
-                self.__draw_data([YELLOW if x == j else BLUE for x in range(self.__size)])
-                time.sleep(self.__time_tick)
-
                 if self.__data[min_idx] <= self.__data[j]:
                     continue
 
                 min_idx = j
 
+            # Update graph
+            self.__draw_data([YELLOW if x == min_idx else BLUE for x in range(self.__size)])
+            time.sleep(self.__time_tick)
+
             self.__data[i], self.__data[min_idx] = self.__data[min_idx], self.__data[i]
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
 
     # Shell Sort
     def __shell_sort(self):
+        def pick_color(x, idx, gp):
+            return YELLOW if x == idx else PURPLE if x == idx + gp else BLUE
+
         gap = self.__size // 2
 
         while gap > 0:
@@ -410,14 +435,18 @@ class Visualizer:
                     if self.__data[i + gap] > self.__data[i]:
                         break
 
-                    self.__draw_data([YELLOW if x == i or x == i + gap else BLUE for x in range(self.__size)])
+                    self.__data[i + gap], self.__data[i] = self.__data[i], self.__data[i + gap]
+
+                    # Update graph
+                    self.__draw_data(
+                        [pick_color(x, i, gap) for x in range(self.__size)])
                     time.sleep(self.__time_tick)
 
-                    self.__data[i + gap], self.__data[i] = self.__data[i], self.__data[i + gap]
                     i -= gap
 
                 j += 1
 
             gap //= 2
 
+        # Update graph
         self.__draw_data([BLUE] * self.__size)
